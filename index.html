@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конструктор страниц</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .builder-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .builder-wrapper { grid-template-columns: 1fr; }
+        }
+
+        .form-card {
+            background-color: #1f1f1f;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #2d2d2d;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: #b0b0b0;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: #121212;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #555;
+        }
+
+        .btn-download {
+            width: 100%;
+            padding: 12px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-download:hover {
+            background-color: #388e3c;
+        }
+
+        .preview-title {
+            font-size: 0.85rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .preview-box {
+            background-color: #121212;
+            padding: 20px;
+            border: 1px dashed #444;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="builder-wrapper">
+        <!-- Левая колонка: Форма ввода -->
+        <div class="form-card">
+            <h2 style="margin-bottom: 20px;">🛠 Создать новую страницу</h2>
+
+            <div class="form-group">
+                <label>Имя файла (без .html)</label>
+                <input type="text" id="fileName" value="page-3" placeholder="например: page-3">
+            </div>
+
+            <div class="form-group">
+                <label>Заголовок (текст сверху)</label>
+                <input type="text" id="pageHeading" value="Первая тема или история" oninput="updatePreview()">
+            </div>
+
+            <div class="form-group">
+                <label>Основное описание (текст снизу)</label>
+                <textarea id="pageText" rows="5" oninput="updatePreview()">Здесь расположена уникальная информация для страницы. Хэдэр сверху зафиксирован автоматически.</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Путь к фото (из папки images или URL)</label>
+                <input type="text" id="imageUrl" value="images/photo1.jpg" oninput="updatePreview()">
+            </div>
+
+            <button class="btn-download" onclick="downloadHTML()">📥 Скачать HTML-файл</button>
+        </div>
+
+        <!-- Правая колонка: Живой предпросмотр -->
+        <div>
+            <div class="preview-title">Предпросмотр результата:</div>
+            <div class="preview-box">
+                <main class="container" style="padding: 0;">
+                    <!-- Зафиксированный хэдэр -->
+                    <header class="site-header">
+                        <img src="images/logo.png" alt="Логотип" class="header-logo">
+                        <span class="header-title">Музей СВО</span>
+                    </header>
+
+                    <h1 id="prevHeading">Первая тема или история</h1>
+                    <p id="prevText">Здесь расположена уникальная информация для страницы. Хэдэр сверху зафиксирован автоматически.</p>
+
+                    <div class="image-wrapper">
+                        <img id="prevImage" src="images/photo1.jpg" alt="Фото">
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Обновление предпросмотра при вводе текста
+        function updatePreview() {
+            document.getElementById('prevHeading').innerText = document.getElementById('pageHeading').value;
+            document.getElementById('prevText').innerText = document.getElementById('pageText').value;
+            document.getElementById('prevImage').src = document.getElementById('imageUrl').value;
+        }
+
+        // Скачивание готового HTML файла
+        function downloadHTML() {
+            const fileName = (document.getElementById('fileName').value || 'page').trim() + '.html';
+            const pageHeading = document.getElementById('pageHeading').value;
+            const pageText = document.getElementById('pageText').value;
+            const imageUrl = document.getElementById('imageUrl').value;
+
+            // Генерируем стандартный файл с фиксированным хэдэром
+            const htmlContent = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${pageHeading}</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="container">
+        <header class="site-header">
+            <img src="images/logo.png" alt="Логотип" class="header-logo">
+            <span class="header-title">Музей СВО</span>
+        </header>
+
+        <h1>${pageHeading}</h1>
+        <p>${pageText}</p>
+        
+        <div class="image-wrapper">
+            <img src="${imageUrl}" alt="${pageHeading}">
+        </div>
+    </main>
+
+</body>
+</html>`;
+
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+        }
+    </script>
+</body>
+</html>
