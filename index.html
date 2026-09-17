@@ -99,19 +99,25 @@
 
             <div class="form-group">
                 <label>Заголовок (текст сверху)</label>
-                <input type="text" id="pageHeading" value="Первая тема или история" oninput="updatePreview()">
+                <input type="text" id="pageHeading" value="Тема с фото и видео" oninput="updatePreview()">
             </div>
 
             <div class="form-group">
-                <label>Основное описание (текст снизу)</label>
-                <textarea id="pageText" rows="6" oninput="updatePreview()">Первый абзац текста.
+                <label>Основной текст</label>
+                <textarea id="pageText" rows="4" oninput="updatePreview()">Первый абзац.
 
-Второй абзац текста после нажатия Enter.</textarea>
+Ниже расположены фото с прокруткой и видеофайл.</textarea>
             </div>
 
             <div class="form-group">
-                <label>Путь к фото (из папки images или URL)</label>
-                <input type="text" id="imageUrl" value="images/photo1.jpg" oninput="updatePreview()">
+                <label>Пути к картинкам (каждый путь с новой строки)</label>
+                <textarea id="imageUrls" rows="3" oninput="updatePreview()">images/photo1.jpg
+images/photo2.jpg</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Пути к видео (каждый путь с новой строки, опционально)</label>
+                <textarea id="videoUrls" rows="2" placeholder="videos/video1.mp4" oninput="updatePreview()"></textarea>
             </div>
 
             <button class="btn-download" onclick="downloadHTML()">📥 Скачать HTML-файл</button>
@@ -128,21 +134,18 @@
                         <span class="header-title">Музей СВО</span>
                     </header>
 
-                    <h1 id="prevHeading">Первая тема или история</h1>
+                    <h1 id="prevHeading">Тема с фото и видео</h1>
                     
-                    <!-- Сюда вставляются форматированные абзацы -->
                     <div id="prevTextContainer"></div>
-
-                    <div class="image-wrapper">
-                        <img id="prevImage" src="images/photo1.jpg" alt="Фото">
-                    </div>
+                    <div id="prevGalleryContainer"></div>
+                    <div id="prevVideoContainer"></div>
                 </main>
             </div>
         </div>
     </div>
 
     <script>
-        // Превращает переносы строк (Enter) в HTML-абзацы <p>
+        // Форматирование текста на абзацы
         function formatTextToHTML(text) {
             if (!text) return '';
             return text
@@ -152,22 +155,51 @@
                 .join('\n        ');
         }
 
+        // Форматирование списка картинок в скроллируемую галерею
+        function formatImagesToHTML(text) {
+            if (!text) return '';
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+            if (lines.length === 0) return '';
+
+            const isSingle = lines.length === 1 ? ' single-image' : '';
+            const items = lines.map(src => `
+            <div class="gallery-item">
+                <img src="${src}" alt="Фото">
+            </div>`).join('');
+
+            return `<div class="gallery-container${isSingle}">${items}\n        </div>`;
+        }
+
+        // Форматирование списка видеофайлов в плееры
+        function formatVideosToHTML(text) {
+            if (!text) return '';
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+            if (lines.length === 0) return '';
+
+            return lines.map(src => `
+        <div class="video-wrapper">
+            <video controls preload="metadata">
+                <source src="${src}" type="video/mp4">
+                Ваш браузер не поддерживает видео.
+            </video>
+        </div>`).join('\n');
+        }
+
         // Обновление предпросмотра
         function updatePreview() {
             document.getElementById('prevHeading').innerText = document.getElementById('pageHeading').value;
             
-            const rawText = document.getElementById('pageText').value;
-            document.getElementById('prevTextContainer').innerHTML = formatTextToHTML(rawText);
-            
-            document.getElementById('prevImage').src = document.getElementById('imageUrl').value;
+            document.getElementById('prevTextContainer').innerHTML = formatTextToHTML(document.getElementById('pageText').value);
+            document.getElementById('prevGalleryContainer').innerHTML = formatImagesToHTML(document.getElementById('imageUrls').value);
+            document.getElementById('prevVideoContainer').innerHTML = formatVideosToHTML(document.getElementById('videoUrls').value);
         }
 
-        // Генерация чистого HTML-кода
+        // Генерация итогового HTML
         function generateHTML() {
             const pageHeading = document.getElementById('pageHeading').value;
-            const rawText = document.getElementById('pageText').value;
-            const formattedText = formatTextToHTML(rawText);
-            const imageUrl = document.getElementById('imageUrl').value;
+            const formattedText = formatTextToHTML(document.getElementById('pageText').value);
+            const formattedGallery = formatImagesToHTML(document.getElementById('imageUrls').value);
+            const formattedVideos = formatVideosToHTML(document.getElementById('videoUrls').value);
 
             return `<!DOCTYPE html>
 <html lang="ru">
@@ -187,37 +219,29 @@
 
         <h1>${pageHeading}</h1>
         ${formattedText}
-        
-        <div class="image-wrapper">
-            <img src="${imageUrl}" alt="${pageHeading}">
-        </div>
+        ${formattedGallery}
+        ${formattedVideos}
     </main>
 
 </body>
 </html>`;
         }
 
-        // Скачивание файла
         function downloadHTML() {
             const fileName = (document.getElementById('fileName').value || 'page').trim() + '.html';
-            const htmlContent = generateHTML();
-
-            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+            const blob = new Blob([generateHTML()], { type: 'text/html;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = fileName;
             link.click();
         }
 
-        // Копирование кода
         function copyHTML() {
-            const htmlContent = generateHTML();
-            navigator.clipboard.writeText(htmlContent).then(() => {
+            navigator.clipboard.writeText(generateHTML()).then(() => {
                 alert('Код страницы скопирован!');
             });
         }
 
-        // Инициализация при загрузке
         updatePreview();
     </script>
 </body>
