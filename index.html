@@ -104,7 +104,9 @@
 
             <div class="form-group">
                 <label>Основное описание (текст снизу)</label>
-                <textarea id="pageText" rows="5" oninput="updatePreview()">Здесь расположена уникальная информация для страницы. Хэдэр сверху зафиксирован автоматически.</textarea>
+                <textarea id="pageText" rows="6" oninput="updatePreview()">Первый абзац текста.
+
+Второй абзац текста после нажатия Enter.</textarea>
             </div>
 
             <div class="form-group">
@@ -113,21 +115,23 @@
             </div>
 
             <button class="btn-download" onclick="downloadHTML()">📥 Скачать HTML-файл</button>
+            <button class="btn-download" onclick="copyHTML()" style="background-color: #444; margin-top: 8px;">📋 Скопировать код</button>
         </div>
 
-        <!-- Правая колонка: Живой предпросмотр -->
+        <!-- Правая колонка: Предпросмотр -->
         <div>
             <div class="preview-title">Предпросмотр результата:</div>
             <div class="preview-box">
                 <main class="container" style="padding: 0;">
-                    <!-- Зафиксированный хэдэр -->
                     <header class="site-header">
                         <img src="images/logo.png" alt="Логотип" class="header-logo">
                         <span class="header-title">Музей СВО</span>
                     </header>
 
                     <h1 id="prevHeading">Первая тема или история</h1>
-                    <p id="prevText">Здесь расположена уникальная информация для страницы. Хэдэр сверху зафиксирован автоматически.</p>
+                    
+                    <!-- Сюда вставляются форматированные абзацы -->
+                    <div id="prevTextContainer"></div>
 
                     <div class="image-wrapper">
                         <img id="prevImage" src="images/photo1.jpg" alt="Фото">
@@ -138,22 +142,34 @@
     </div>
 
     <script>
-        // Обновление предпросмотра при вводе текста
+        // Превращает переносы строк (Enter) в HTML-абзацы <p>
+        function formatTextToHTML(text) {
+            if (!text) return '';
+            return text
+                .split('\n')
+                .filter(line => line.trim() !== '')
+                .map(line => `<p>${line.trim()}</p>`)
+                .join('\n        ');
+        }
+
+        // Обновление предпросмотра
         function updatePreview() {
             document.getElementById('prevHeading').innerText = document.getElementById('pageHeading').value;
-            document.getElementById('prevText').innerText = document.getElementById('pageText').value;
+            
+            const rawText = document.getElementById('pageText').value;
+            document.getElementById('prevTextContainer').innerHTML = formatTextToHTML(rawText);
+            
             document.getElementById('prevImage').src = document.getElementById('imageUrl').value;
         }
 
-        // Скачивание готового HTML файла
-        function downloadHTML() {
-            const fileName = (document.getElementById('fileName').value || 'page').trim() + '.html';
+        // Генерация чистого HTML-кода
+        function generateHTML() {
             const pageHeading = document.getElementById('pageHeading').value;
-            const pageText = document.getElementById('pageText').value;
+            const rawText = document.getElementById('pageText').value;
+            const formattedText = formatTextToHTML(rawText);
             const imageUrl = document.getElementById('imageUrl').value;
 
-            // Генерируем стандартный файл с фиксированным хэдэром
-            const htmlContent = `<!DOCTYPE html>
+            return `<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -170,7 +186,7 @@
         </header>
 
         <h1>${pageHeading}</h1>
-        <p>${pageText}</p>
+        ${formattedText}
         
         <div class="image-wrapper">
             <img src="${imageUrl}" alt="${pageHeading}">
@@ -179,6 +195,12 @@
 
 </body>
 </html>`;
+        }
+
+        // Скачивание файла
+        function downloadHTML() {
+            const fileName = (document.getElementById('fileName').value || 'page').trim() + '.html';
+            const htmlContent = generateHTML();
 
             const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
             const link = document.createElement('a');
@@ -186,6 +208,17 @@
             link.download = fileName;
             link.click();
         }
+
+        // Копирование кода
+        function copyHTML() {
+            const htmlContent = generateHTML();
+            navigator.clipboard.writeText(htmlContent).then(() => {
+                alert('Код страницы скопирован!');
+            });
+        }
+
+        // Инициализация при загрузке
+        updatePreview();
     </script>
 </body>
 </html>
