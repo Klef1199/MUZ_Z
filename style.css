@@ -82,3 +82,63 @@ p {
     display: block;
     object-fit: cover;
 }
+/* --- Галерея картинок с горизонтальной прокруткой --- */
+.gallery-container {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 8px;
+    margin-top: 16px;
+    scroll-behavior: smooth;
+}
+
+/* Красивая полоса прокрутки */
+.gallery-container::-webkit-scrollbar {
+    height: 6px;
+}
+.gallery-container::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 4px;
+}
+.gallery-container::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+
+/* Карточка одной фотографии в галерее */
+.gallery-item {
+    flex: 0 0 88%; /* Показывает фото и край следующего, подталкивая к скроллу */
+    scroll-snap-align: center;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+/* Если картинка всего одна — занимать 100% ширины */
+.gallery-container.single-image .gallery-item {
+    flex: 0 0 100%;
+}
+
+/* --- Встроенный видеоплеер --- */
+.video-wrapper {
+    width: 100%;
+    margin-top: 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    background-color: #000;
+}
+
+.video-wrapper video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
