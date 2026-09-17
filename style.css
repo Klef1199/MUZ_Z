@@ -63,8 +63,9 @@ h1 {
 
 p {
     font-size: 1.05rem;
-    margin-bottom: 20px;
+    margin-bottom: 20px; /* Отступ между абзацами */
     color: #b0b0b0;
+    white-space: pre-line; /* Сохраняет переносы строк внутри одного абзаца */
 }
 
 .image-wrapper {
